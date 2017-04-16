@@ -26,6 +26,8 @@ import org.greenrobot.eventbus.Subscribe;
 public class ControlFagment extends Fragment implements View.OnClickListener {
 
 
+//    private static final String TAG = ControlFagment.class.getSimpleName();
+
     private ImageView mAlbumArt;
     private TextView mTitleText;
     private TextView mArtistText;
@@ -62,7 +64,6 @@ public class ControlFagment extends Fragment implements View.OnClickListener {
         EventBus.getDefault().register(this);
     }
 
-
     @Override
     public void onStop() {
         super.onStop();
@@ -74,7 +75,6 @@ public class ControlFagment extends Fragment implements View.OnClickListener {
         Intent intent = new Intent(getActivity(), MusicService.class);
         intent.setAction(MusicService.ACTION_RESUME);
         getActivity().startService(intent);
-
     }
 
     @Subscribe
@@ -93,5 +93,10 @@ public class ControlFagment extends Fragment implements View.OnClickListener {
             mTitleText.setText(title);
             mArtistText.setText(artist);
         }
+    }
+
+    @Subscribe
+    public void updateButton(Boolean isPlaying) {
+        mPlayButton.setText(isPlaying ? "중지" : "재생");
     }
 }

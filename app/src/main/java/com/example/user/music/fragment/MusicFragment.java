@@ -119,8 +119,10 @@ public class MusicFragment extends Fragment {
 
                     /**
                      * {@link ControlFagment#setData(MediaMetadataRetriever)}
+                     * {@link PlayerFragment#setMusicData(MediaMetadataRetriever)}
                      * **/
                     EventBus.getDefault().post(retriever);
+
                 }
             });
         }

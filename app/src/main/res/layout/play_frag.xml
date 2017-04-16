@@ -10,9 +10,9 @@
         android:layout_weight="1">
 
         <ImageView
+            android:id="@+id/album_main"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:src="@mipmap/ic_launcher" />
+            android:layout_height="match_parent" />
 
     </LinearLayout>
 
