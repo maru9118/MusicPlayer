@@ -56,6 +56,7 @@ public class MusicFragment extends Fragment {
                         null,
                         null);
 
+
         MyAdapter adapter = new MyAdapter(getActivity(), cursor);
         musicList.setAdapter(adapter);
     }
@@ -119,10 +120,8 @@ public class MusicFragment extends Fragment {
 
                     /**
                      * {@link ControlFagment#setData(MediaMetadataRetriever)}
-                     * {@link PlayerFragment#setMusicData(MediaMetadataRetriever)}
                      * **/
                     EventBus.getDefault().post(retriever);
-
                 }
             });
         }
