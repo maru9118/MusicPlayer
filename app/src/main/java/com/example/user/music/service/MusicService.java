@@ -2,7 +2,6 @@ package com.example.user.music.service;
 
 import android.app.Service;
 import android.content.ContentUris;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.media.AudioManager;
@@ -14,47 +13,85 @@ import android.os.IBinder;
 import android.provider.BaseColumns;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.IOException;
-
-import static com.bumptech.glide.gifdecoder.GifHeaderParser.TAG;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by user on 2017-04-14.
  */
 
 public class MusicService extends Service {
-//    private static final String TAG = MusicService.class.getSimpleName();
+    private static final String TAG = MusicService.class.getSimpleName();
 
-    public static String ACTION_PLAY = "play";
-    public static String ACTION_RESUME = "resume";
+    public static final String ACTION_PLAY = "play";
+    public static final String ACTION_RESUME = "resume";
+    public static final String ACTION_NEXT = "next";
+    public static final String ACTION_PREV = "prev";
 
     private MediaPlayer mMediaPlayer;
 
     private IBinder mBinder = new MusicBinder();
+
     private MediaMetadataRetriever mRetriever;
+
+    private List<Uri> mSongList;
+    private int mIndex = 0;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        mSongList = new ArrayList<>();
+
+        Cursor cursor = getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                null,
+                null,
+                null,
+                null);
+
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                Uri uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, cursor.getLong(
+                        cursor.getColumnIndexOrThrow(BaseColumns._ID)));
+
+                mSongList.add(uri);
+            }
+            cursor.close();
+        }
+    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null) {
             String action = intent.getAction();
 
-            if (!TextUtils.isEmpty(action)) {
+            switch (action) {
                 // TODO NPE 에러 발생 지점.. intent 확인 요망. (이런식으로 할 것 , 이슈 바로 해결할 것)
-                if (ACTION_PLAY.equals(action)) {
+                case ACTION_PLAY:
                     playMusic((Uri) intent.getParcelableExtra("uri"));
-                } else if (ACTION_RESUME.equals(action)) {
+                    break;
+
+                case ACTION_RESUME:
                     clickResumeButton();
-                }
+                    break;
+
+                case ACTION_NEXT:
+                    nextMusic();
+                    break;
+
+                case ACTION_PREV:
+                    prevMusic();
+                    break;
             }
         }
-
         return START_STICKY;
     }
+
 
     private void playMusic(final Uri uri) {
         try {
@@ -62,19 +99,14 @@ public class MusicService extends Service {
             mRetriever = new MediaMetadataRetriever();
             mRetriever.setDataSource(this, uri);
 
-            if (mMediaPlayer == null) {
-                mMediaPlayer = new MediaPlayer();
-                mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            }
-
-            if (mMediaPlayer.isPlaying()) {
+            if (mMediaPlayer != null) {
                 mMediaPlayer.stop();
                 mMediaPlayer.release();
-                mMediaPlayer = new MediaPlayer();
-                mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             }
 
-            // TODO : IllegalStateException 확인요망
+            mMediaPlayer = new MediaPlayer();
+            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+
             mMediaPlayer.setDataSource(this, uri);
             mMediaPlayer.prepareAsync();
             mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -93,24 +125,9 @@ public class MusicService extends Service {
             mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
-                    final Uri currentUri = uri;
-                    Cursor cursor = getCursor(getApplicationContext());
-                    while (cursor.moveToNext()) {
-                        final Uri uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, cursor.getLong(
-                                cursor.getColumnIndexOrThrow(BaseColumns._ID)));
-                        if (currentUri.toString().equals(uri.toString())) {
 
-                            if (cursor.moveToNext()) {
-                            } else {
-                                cursor.moveToFirst();
-                            }
-                            break;
-                        }
-                    }
-                    final Uri uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, cursor.getLong(
-                            cursor.getColumnIndexOrThrow(BaseColumns._ID)));
-                    playMusic(uri);
-                    Log.d(TAG, "onCompletion: 컴플릿으로 옴");
+                    nextMusic();
+//                    Log.d(TAG, "onCompletion: 컴플릿으로 옴");
                 }
             });
         } catch (IOException e) {
@@ -156,6 +173,7 @@ public class MusicService extends Service {
             // MusicService 자체의 레퍼런스
             return MusicService.this;
         }
+
     }
 
     public MediaMetadataRetriever getMetaDataRetriever() {
@@ -166,12 +184,24 @@ public class MusicService extends Service {
         return mMediaPlayer;
     }
 
-    public Cursor getCursor(Context context) {
-        return context.getContentResolver()
-                .query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                        null,
-                        null,
-                        null,
-                        null);
+    private void nextMusic() {
+
+        mIndex++;
+
+        if (mIndex > mSongList.size() - 1) {
+            mIndex = 0;
+        }
+        playMusic(mSongList.get(mIndex));
     }
+
+    private void prevMusic() {
+
+        mIndex--;
+
+        if (mIndex < 0) {
+            mIndex = mSongList.size() - 1;
+        }
+        playMusic(mSongList.get(mIndex));
+    }
+
 }

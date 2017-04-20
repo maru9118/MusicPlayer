@@ -6,15 +6,18 @@
 
     <ImageView
         android:id="@+id/album_image"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginLeft="10dp"
         android:src="@mipmap/ic_launcher" />
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
         android:layout_weight="1"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingTop="5dp">
 
         <TextView
             android:id="@+id/title_text"
@@ -37,18 +40,25 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <Button
+        <ImageButton
+            android:id="@+id/prev_btn"
             android:layout_width="50dp"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:src="@drawable/prev" />
 
-        <Button
+        <ImageButton
             android:id="@+id/play_btn"
             android:layout_width="50dp"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:background="@null" />
 
-        <Button
+        <ImageButton
+            android:id="@+id/next_btn"
             android:layout_width="50dp"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:src="@drawable/next" />
 
     </LinearLayout>
 

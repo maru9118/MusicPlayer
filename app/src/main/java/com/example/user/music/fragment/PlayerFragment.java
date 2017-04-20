@@ -21,6 +21,9 @@ import com.bumptech.glide.Glide;
 import com.example.user.music.R;
 import com.example.user.music.service.MusicService;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+
 import java.util.Locale;
 
 /**
@@ -68,6 +71,7 @@ public class PlayerFragment extends Fragment {
         mSeekBar = (SeekBar) view.findViewById(R.id.seekBar);
 
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser) {
@@ -92,6 +96,7 @@ public class PlayerFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        EventBus.getDefault().register(this);
 
         Intent intent = new Intent(getActivity(), MusicService.class);
         getActivity().bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
@@ -100,13 +105,16 @@ public class PlayerFragment extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
+        EventBus.getDefault().unregister(this);
+
         if (mBound) {
             getActivity().unbindService(mConnection);
             mBound = false;
         }
     }
 
-    private void updateData(boolean isPlaying) {
+    @Subscribe
+    public void updateData(Boolean isPlaying) {
 
         if (isPlaying) {
             MediaMetadataRetriever retriever = mService.getMetaDataRetriever();
